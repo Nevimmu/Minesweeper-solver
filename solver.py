@@ -6,7 +6,7 @@ class Solver():
 		self.board = board
 		self.width = self.board.getSize()[1]
 		self.height = self.board.getSize()[0]
-		self.confirmed_bomb_subsets = {1, 2}
+		self.confirmed_bomb_subsets = set()
 		self.changed = True
 		self.draw = draw
 
