@@ -109,6 +109,13 @@ class Solver():
 
 					# Conflict detection
 					if required_from_shared == max_possible:
+						# New: Safe cell deduction
+						if remaining - required_from_shared == 0:
+							safe_cells = set(hidden) - shared
+							print(f"  🎉 SAFE CELLS DETECTED: {safe_cells}")
+							for r, c in safe_cells:
+								self._mark_safe(r, c)
+								
 						bombs_needed_outside = remaining - required_from_shared
 						print(f"  🚨 CONFLICT: Need {bombs_needed_outside} bomb(s) outside shared area!")
 						
