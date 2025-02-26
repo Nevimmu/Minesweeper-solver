@@ -6,7 +6,7 @@ class Solver():
 		self.board = board
 		self.width = self.board.getSize()[1]
 		self.height = self.board.getSize()[0]
-		self.confirmed_bomb_subsets = []
+		self.confirmed_bomb_subsets = {1, 2}
 		self.changed = True
 		self.draw = draw
 
@@ -60,7 +60,7 @@ class Solver():
 						self.changed = True
 
 				if len(hidden) + flagged > cell.getNumAround():
-					self.confirmed_bomb_subsets.append(set(hidden))
+					self.confirmed_bomb_subsets.add(frozenset(hidden))
 
 	
 	def advancedLogic(self):
@@ -171,7 +171,7 @@ class Solver():
 	def solve(self):
 		while True:
 			self.changed = False
-			self.confirmed_bomb_subsets = []
+			self.confirmed_bomb_subsets.clear()
 
 			self.basicDeduction()
 			self.advancedLogic()
