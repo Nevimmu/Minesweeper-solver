@@ -64,7 +64,6 @@ class Solver():
 
 	
 	def advancedLogic(self):
-		print('----------------------------------')
 		for row in range(self.height):
 			for col in range(self.width):
 				cell: Cell = self.board.getCell(row, col)
@@ -75,9 +74,6 @@ class Solver():
 				remaining = cell.getNumAround() - flag
 				
 				# New: Debug header
-				print(f"\n=== ANALYZING ({row},{col}) [Value: {cell.getNumAround()}] ===")
-				print(f"Hidden: {hidden} | Flags: {flag} | Needed: {remaining}")
-
 				for _row, _col in self.getNeighborsPos(row, col):
 					neighbor: Cell = self.board.getCell(_row, _col)
 					if not neighbor.getIsClicked() or neighbor.getNumAround() == 0:
@@ -90,10 +86,6 @@ class Solver():
 					if not shared:
 						continue  # No shared cells to analyze
 
-					print(f"\n  Comparing with ({_row},{_col}) [Value: {neighbor.getNumAround()}]")
-					print(f"  N_Hidden: {n_hidden} | N_Flags: {n_flag} | N_Needed: {n_remaining}")
-					print(f"  Shared cells: {shared}")
-
 					# Calculate maximum bombs that can be placed in shared area
 					max_for_cell = min(remaining, len(shared))
 					max_for_neighbor = min(n_remaining, len(shared))
@@ -103,30 +95,23 @@ class Solver():
 					required_cell = remaining - (len(hidden) - len(shared))
 					required_neighbor = n_remaining - (len(n_hidden) - len(shared))
 					required_from_shared = max(required_cell, required_neighbor, 0)
-					
-					print(f"  Max possible in shared: {max_possible}")
-					print(f"  Required from shared: {required_from_shared}")
+				
 
 					# Conflict detection
 					if required_from_shared == max_possible:
 						# New: Safe cell deduction
 						if remaining - required_from_shared == 0:
 							safe_cells = set(hidden) - shared
-							print(f"  🎉 SAFE CELLS DETECTED: {safe_cells}")
 							for r, c in safe_cells:
 								self._mark_safe(r, c)
-								
+
 						bombs_needed_outside = remaining - required_from_shared
-						print(f"  🚨 CONFLICT: Need {bombs_needed_outside} bomb(s) outside shared area!")
 						
 						# Get non-shared cells for original cell
 						non_shared = set(hidden) - shared
-						print(f"  Non-shared cells: {non_shared}")
 						
 						if bombs_needed_outside == len(non_shared):
-							print(f"    🔥 ALL non-shared must be bombs!")
 							for r, c in non_shared:
-								print(f"    🚩 FORCED BOMB at ({r},{c})")
 								self._mark_bomb(r, c)
 					
 				# Check if hidden cells match a known bomb subset
