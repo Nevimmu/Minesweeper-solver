@@ -2,12 +2,13 @@ from board import Board
 from cell import Cell
 
 class Solver():
-	def __init__(self, board: Board):
+	def __init__(self, board: Board, draw):
 		self.board = board
 		self.width = self.board.getSize()[1]
 		self.height = self.board.getSize()[0]
 		self.confirmed_bomb_subsets = []
 		self.changed = True
+		self.draw = draw
 
 
 	def getNeighborsPos(self, row, col):
@@ -48,12 +49,14 @@ class Solver():
 					for _row, _col in hidden:
 						_cell: Cell = self.board.getCell(_row, _col)
 						self.board.handleClick(_cell, False)
+						self.draw()
 						self.changed = True
 
 				if len(hidden) + flagged == cell.getNumAround():
 					for _row, _col in hidden:
 						_cell: Cell = self.board.getCell(_row, _col)
 						self.board.handleClick(_cell, True)
+						self.draw()
 						self.changed = True
 
 				if len(hidden) + flagged > cell.getNumAround():
@@ -99,6 +102,7 @@ class Solver():
 							if not h_cell.getHasFlag() and not h_cell.getIsClicked():
 								# print(f'Reveal safe cell at ({h_row}, {h_col})')
 								self.board.handleClick(h_cell, False)
+								self.draw()
 								self.changed = True
 
 
@@ -111,6 +115,7 @@ class Solver():
 								if not h_cell.getHasFlag():
 									# print(f'Flagging bomb at ({h_row, h_col})')
 									self.board.handleClick(h_cell, True)
+									self.draw()
 									self.changed = True
 
 						elif bomb_diff > 0 and bomb_diff == extra_hidden:
@@ -120,6 +125,7 @@ class Solver():
 								if not h_cell.getHasFlag():
 									# print(f'Flagging extra bomb at ({h_row}, {h_col})')
 									self.board.handleClick(h_cell, True)
+									self.draw()
 									self.changed = True
 									
 						
@@ -130,6 +136,7 @@ class Solver():
 						if cell.getNumAround() == flag + 1:
 							for s_row, s_col in safe_cells:
 								self.board.handleClick(self.board.getCell(s_row, s_col), False)
+								self.draw()
 								self.changed = True
 
 

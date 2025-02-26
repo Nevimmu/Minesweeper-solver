@@ -33,6 +33,7 @@ class Game():
 						position = pygame.mouse.get_pos()
 						if started == False:
 							self.board.setBombs(self.getIndex(position))
+							solver = Solver(self.board, self.draw)
 							started = True
 						flag = True if button == 3 else False
 						self.handleClick(position, flag)
@@ -41,7 +42,6 @@ class Game():
 						self.board = Board(self.board.getSize(), self.board.getNbBombs())
 						started = False
 					if event.key == pygame.K_s:
-						solver = Solver(self.board)
 						canSolve = solver.solve()
 						if canSolve:
 							print('No guess')
@@ -52,17 +52,13 @@ class Game():
 						self.board = BoardBis(self.board.getSize(), self.board.getNbBombs())
 						started = False
 					if event.key == pygame.K_t:
-						solver = Solver(self.board)
 						solver.basicDeduction()
 					if event.key == pygame.K_y:
-						solver = Solver(self.board)
 						solver.advancedLogic()
 					if event.key == pygame.K_u:
-						solver = Solver(self.board)
 						solver.singleBombLogic()
 
 			self.draw()
-			pygame.display.flip()
 			if self.board.getWon():
 				print('you won')
 				time.sleep(2)
@@ -79,6 +75,7 @@ class Game():
 				self.screen.blit(image, topLeft)
 				topLeft = topLeft[0] + self.cellSize[0], topLeft[1]
 			topLeft = 0, topLeft[1] + self.cellSize[1]
+		pygame.display.flip()
 
 	def getImage(self, cell: Cell):
 		string = 'empty-block'
