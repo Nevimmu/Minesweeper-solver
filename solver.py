@@ -44,6 +44,7 @@ class Solver():
 					continue
 
 				hidden, flagged = self.countHiddenAndFlag(row, col)
+				remaining = cell.getNumAround() - flagged
 
 				if flagged == cell.getNumAround():
 					for _row, _col in hidden:
@@ -60,7 +61,7 @@ class Solver():
 						self.changed = True
 
 				if len(hidden) + flagged > cell.getNumAround():
-					self.confirmed_bomb_subsets.add(frozenset(hidden))
+					self.confirmed_bomb_subsets.add((frozenset(hidden), remaining))
 
 	
 	def advancedLogic(self):
@@ -116,8 +117,8 @@ class Solver():
 					
 				# Check if hidden cells match a known bomb subset
 				for bomb_subset in self.confirmed_bomb_subsets:
-					if bomb_subset.issubset(set(hidden)) and bomb_subset != set(hidden):
-						safe_cells = set(hidden) - bomb_subset
+					if bomb_subset[0].issubset(set(hidden)) and bomb_subset[0] != set(hidden):
+						safe_cells = set(hidden) - bomb_subset[0]
 						if cell.getNumAround() == flag + 1:
 							for s_row, s_col in safe_cells:
 								self.board.handleClick(self.board.getCell(s_row, s_col), False)
