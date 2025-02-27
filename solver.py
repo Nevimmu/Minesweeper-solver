@@ -73,6 +73,9 @@ class Solver():
 
 				hidden, flag = self.countHiddenAndFlag(row, col)
 				remaining = cell.getNumAround() - flag
+
+				if not hidden:
+					continue
 				
 				# New: Debug header
 				for _row, _col in self.getNeighborsPos(row, col):
