@@ -140,6 +140,49 @@ class Solver():
 					self.draw()
 					self.changed = True
 
+	def mineCountLogic(self):
+		remaining_bombs = self.board.getFlagToFind()
+		if remaining_bombs <= 0:
+			return
+		# Get all hidden cells and confirmed subsets
+		all_hidden = set()
+		for row in range(self.height):
+			for col in range(self.width):
+				cell = self.board.getCell(row, col)
+				if not cell.getIsClicked() and not cell.getHasFlag():
+					all_hidden.add((row, col))
+		# Convert confirmed_bomb_subsets to list of (cells, count)
+		subsets = [ (set(s[0]), s[1]) for s in self.confirmed_bomb_subsets ]
+		# Find non-overlapping combinations that sum to remaining bombs
+		from itertools import combinations
+		valid_combinations = []
+		
+		# Check combinations of increasing size
+		for r in range(1, len(subsets) + 1):
+			for combo in combinations(subsets, r):
+				total = sum(c[1] for c in combo)
+				if total != remaining_bombs:
+					continue
+						
+				# Check if all subsets in combo are disjoint
+				union = set()
+				valid = True
+				for s in combo:
+					if union & s[0]:
+						valid = False
+						break
+					union |= s[0]
+				if valid:
+					valid_combinations.append(union)
+		# If valid combination found, mark other cells as safe
+		for union in valid_combinations:
+			safe_cells = all_hidden - union
+			if safe_cells:
+				print(f"⚠️ MINE COUNT: Found {remaining_bombs} bombs in subsets")
+				print(f"   Marking {safe_cells} as safe")
+				for r, c in safe_cells:
+					self._mark_safe(r, c)
+				return  # Stop after first valid combination
 
 	def singleBombLogic(self):
 		"""Checks for cases where exactly one bomb must be in one specific cell."""
@@ -176,6 +219,9 @@ class Solver():
 
 			self.basicDeduction()
 			self.advancedLogic()
+			
+			if not self.changed: 
+				self.mineCountLogic()
 
 			if self.board.getFlagToFind() == 1:
 				self.singleBombLogic()
