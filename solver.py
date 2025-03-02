@@ -80,6 +80,12 @@ class Solver():
 				if not remaining:
 					for _row, _col in hidden:
 						self._mark_safe(_row, _col)
+					continue
+
+				if len(hidden) == remaining:
+					for _row, _col in hidden:
+						self._mark_bomb(_row, _col)
+					continue
 				
 				# New: Debug header
 				for _row, _col in self.getNeighborsPos(row, col):
