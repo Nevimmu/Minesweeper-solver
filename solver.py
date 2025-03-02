@@ -76,6 +76,10 @@ class Solver():
 
 				if not hidden:
 					continue
+
+				if not remaining:
+					for _row, _col in hidden:
+						self._mark_safe(_row, _col)
 				
 				# New: Debug header
 				for _row, _col in self.getNeighborsPos(row, col):
@@ -181,8 +185,6 @@ class Solver():
 		for union in valid_combinations:
 			safe_cells = all_hidden - union
 			if safe_cells:
-				print(f"⚠️ MINE COUNT: Found {remaining_bombs} bombs in subsets")
-				print(f"   Marking {safe_cells} as safe")
 				for r, c in safe_cells:
 					self._mark_safe(r, c)
 				return  # Stop after first valid combination
