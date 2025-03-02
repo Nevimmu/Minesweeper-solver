@@ -196,32 +196,35 @@ class Solver():
 				return  # Stop after first valid combination
 
 	def singleBombLogic(self):
-		"""Checks for cases where exactly one bomb must be in one specific cell."""
-		possible_bombs = {}  # Maps (row, col) → count of how many numbers rely on this cell
+			"""Checks for cases where exactly one bomb must be in one specific cell."""
+			remaining_bombs = self.board.getFlagToFind()
+			if remaining_bombs != 1:  # Only run when exactly 1 bomb is left
+					return
 
-		for row in range(self.height):
-			for col in range(self.width):
-				cell: Cell = self.board.getCell(row, col)
+			possible_bombs = {}  # Maps (row, col) → count of dependencies
+			for row in range(self.height):
+					for col in range(self.width):
+							cell: Cell = self.board.getCell(row, col)
+							if not cell.getIsClicked() or cell.getNumAround() == 0:
+									continue
 
-				if not cell.getIsClicked() or cell.getNumAround() == 0:
-					continue
+							hidden, flagged = self.countHiddenAndFlag(row, col)
+							needed = cell.getNumAround() - flagged
 
-				hidden, flagged = self.countHiddenAndFlag(row, col)
+							# Only consider cells needing exactly 1 bomb
+							if needed == 1:
+									for h_row, h_col in hidden:
+											possible_bombs[(h_row, h_col)] = possible_bombs.get((h_row, h_col), 0) + 1
 
-				if (cell.getNumAround() - flagged) == 1:  # Only run when exactly 1 bomb is left
-					for h_row, h_col in hidden:
-						if (h_row, h_col) not in possible_bombs:
-							possible_bombs[(h_row, h_col)] = 0
-						possible_bombs[(h_row, h_col)] += 1  # Track how many numbers depend on this cell
+			# Find cells with the highest dependency count
+			if possible_bombs:
+					max_count = max(possible_bombs.values())
+					candidates = [pos for pos, count in possible_bombs.items() if count == max_count]
 
-		# Now, check if any cell is the only possible bomb for multiple numbers
-		for (row, col), count in possible_bombs.items():
-			if count > 1:  # If multiple numbers depend on this cell, it must be a bomb
-				cell: Cell = self.board.getCell(row, col)
-				if not cell.getHasFlag():
-					self.board.handleClick(cell, True)  # Flag the bomb
-					self.draw()
-					self.changed = True
+					# Only mark if ONE candidate dominates
+					if len(candidates) == 1:
+							row, col = candidates[0]
+							self._mark_bomb(row, col)
 	
 	def solve(self):
 		while True:
@@ -234,7 +237,7 @@ class Solver():
 			if not self.changed: 
 				self.mineCountLogic()
 
-			if not self.changed and self.board.getFlagToFind() == 1:
+			if self.board.getFlagToFind() == 1:
 				self.singleBombLogic()
 			
 			if not self.changed:
