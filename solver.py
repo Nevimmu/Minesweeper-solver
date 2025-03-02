@@ -234,7 +234,7 @@ class Solver():
 			if not self.changed: 
 				self.mineCountLogic()
 
-			if self.board.getFlagToFind() == 1:
+			if not self.changed and self.board.getFlagToFind() == 1:
 				self.singleBombLogic()
 			
 			if not self.changed:
