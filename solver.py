@@ -1,3 +1,5 @@
+from itertools import combinations
+
 from board import Board
 from cell import Cell
 
@@ -167,7 +169,6 @@ class Solver():
 		# Convert confirmed_bomb_subsets to list of (cells, count)
 		subsets = [ (set(s[0]), s[1]) for s in self.confirmed_bomb_subsets ]
 		# Find non-overlapping combinations that sum to remaining bombs
-		from itertools import combinations
 		valid_combinations = []
 		
 		# Check combinations of increasing size
