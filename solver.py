@@ -152,9 +152,7 @@ class Solver():
 					safe_cells = set(hidden) - all_subset_cells
 					if safe_cells:
 						for s_row, s_col in safe_cells:
-							self.board.handleClick(self.board.getCell(s_row, s_col), False)
-							self.draw()
-							self.changed = True
+							self._mark_safe(s_row, s_col)
 
 	def _mark_safe(self, row, col):
 			cell: Cell = self.board.getCell(row, col)
@@ -212,35 +210,30 @@ class Solver():
 				return  # Stop after first valid combination
 
 	def singleBombLogic(self):
-			"""Checks for cases where exactly one bomb must be in one specific cell."""
-			remaining_bombs = self.board.getFlagToFind()
-			if remaining_bombs != 1:  # Only run when exactly 1 bomb is left
-					return
-
-			possible_bombs = {}  # Maps (row, col) → count of dependencies
-			for row in range(self.height):
-					for col in range(self.width):
-							cell: Cell = self.board.getCell(row, col)
-							if not cell.getIsClicked() or cell.getNumAround() == 0:
-									continue
-
-							hidden, flagged = self.countHiddenAndFlag(row, col)
-							needed = cell.getNumAround() - flagged
-
-							# Only consider cells needing exactly 1 bomb
-							if needed == 1:
-									for h_row, h_col in hidden:
-											possible_bombs[(h_row, h_col)] = possible_bombs.get((h_row, h_col), 0) + 1
-
-			# Find cells with the highest dependency count
-			if possible_bombs:
-					max_count = max(possible_bombs.values())
-					candidates = [pos for pos, count in possible_bombs.items() if count == max_count]
-
-					# Only mark if ONE candidate dominates
-					if len(candidates) == 1:
-							row, col = candidates[0]
-							self._mark_bomb(row, col)
+		"""Checks for cases where exactly one bomb must be in one specific cell."""
+		remaining_bombs = self.board.getFlagToFind()
+		if remaining_bombs != 1:  # Only run when exactly 1 bomb is left
+			return
+		possible_bombs = {}  # Maps (row, col) → count of dependencies
+		for row in range(self.height):
+			for col in range(self.width):
+				cell: Cell = self.board.getCell(row, col)
+				if not cell.getIsClicked() or cell.getNumAround() == 0:
+					continue
+				hidden, flagged = self.countHiddenAndFlag(row, col)
+				needed = cell.getNumAround() - flagged
+				# Only consider cells needing exactly 1 bomb
+				if needed == 1:
+					for h_row, h_col in hidden:
+						possible_bombs[(h_row, h_col)] = possible_bombs.get((h_row, h_col), 0) + 1
+		# Find cells with the highest dependency count
+		if possible_bombs:
+			max_count = max(possible_bombs.values())
+			candidates = [pos for pos, count in possible_bombs.items() if count == max_count]
+			# Only mark if ONE candidate dominates
+			if len(candidates) == 1:
+				row, col = candidates[0]
+				self._mark_bomb(row, col)
 	
 	def solve(self):
 		while True:
