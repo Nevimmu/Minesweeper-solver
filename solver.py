@@ -89,7 +89,7 @@ class Solver():
 						self._mark_bomb(_row, _col)
 					continue
 				
-				# New: Debug header
+				# 4-1
 				for _row, _col in self.getNeighborsPos(row, col):
 					neighbor: Cell = self.board.getCell(_row, _col)
 					if not neighbor.getIsClicked() or neighbor.getNumAround() == 0:
@@ -130,16 +130,31 @@ class Solver():
 							for r, c in non_shared:
 								self._mark_bomb(r, c)
 					
-				# Check if hidden cells match a known bomb subset
-				for bomb_subset in self.confirmed_bomb_subsets:
-					if bomb_subset[0].issubset(set(hidden)) and bomb_subset[0] != set(hidden):
-						safe_cells = set(hidden) - bomb_subset[0]
-						if cell.getNumAround() == flag + 1:
-							for s_row, s_col in safe_cells:
-								self.board.handleClick(self.board.getCell(s_row, s_col), False)
-								self.draw()
-								self.changed = True
+				# Check if hidden cells contain multiple bomb subsets
+				applicable_subsets = []
+				total_subset_bombs = 0
 
+				# Collect all subsets that are part of the hidden cells
+				for bomb_subset in self.confirmed_bomb_subsets:
+					subset_cells, subset_bomb_count = bomb_subset
+					if subset_cells.issubset(hidden) and len(subset_cells) != len(hidden):
+						applicable_subsets.append(bomb_subset)
+						total_subset_bombs += subset_bomb_count
+
+				# Check if the sum of subset bombs matches the cell's remaining bombs
+				if total_subset_bombs == remaining and applicable_subsets:
+					# Get all cells covered by the subsets
+					all_subset_cells = set()
+					for subset in applicable_subsets:
+						all_subset_cells.update(subset[0])
+						
+					# Deduce safe cells outside these subsets
+					safe_cells = set(hidden) - all_subset_cells
+					if safe_cells:
+						for s_row, s_col in safe_cells:
+							self.board.handleClick(self.board.getCell(s_row, s_col), False)
+							self.draw()
+							self.changed = True
 
 	def _mark_safe(self, row, col):
 			cell: Cell = self.board.getCell(row, col)
