@@ -50,19 +50,15 @@ class Solver():
 
 				if flagged == cell.getNumAround():
 					for _row, _col in hidden:
-						_cell: Cell = self.board.getCell(_row, _col)
-						self.board.handleClick(_cell, False)
-						self.draw()
-						self.changed = True
+						self._mark_safe(_row, _col)
+					continue
 
 				if len(hidden) + flagged == cell.getNumAround():
 					for _row, _col in hidden:
-						_cell: Cell = self.board.getCell(_row, _col)
-						self.board.handleClick(_cell, True)
-						self.draw()
-						self.changed = True
+						self._mark_bomb(_row, _col)
+					continue
 
-				if len(hidden) + flagged > cell.getNumAround():
+				if len(hidden) + flagged > cell.getNumAround() and len(hidden) <= 3:
 					self.confirmed_bomb_subsets.add((frozenset(hidden), remaining))
 
 	
@@ -115,7 +111,7 @@ class Solver():
 
 					# Conflict detection
 					if required_from_shared == max_possible:
-						# New: Safe cell deduction
+						# Safe cell deduction
 						if remaining - required_from_shared == 0:
 							safe_cells = set(hidden) - shared
 							for r, c in safe_cells:
@@ -130,24 +126,32 @@ class Solver():
 							for r, c in non_shared:
 								self._mark_bomb(r, c)
 					
-				# Check if hidden cells contain multiple bomb subsets
 				applicable_subsets = []
 				total_subset_bombs = 0
 
-				# Collect all subsets that are part of the hidden cells
-				for bomb_subset in self.confirmed_bomb_subsets:
+				# Sort subsets by size (largest first) to prioritize maximal subsets
+				sorted_subsets = sorted(self.confirmed_bomb_subsets, key=lambda x: len(x[0]), reverse=True)
+
+				for bomb_subset in sorted_subsets:
 					subset_cells, subset_bomb_count = bomb_subset
+					
+					# Check if subset is valid and not redundant
 					if subset_cells.issubset(hidden) and len(subset_cells) != len(hidden):
-						applicable_subsets.append(bomb_subset)
-						total_subset_bombs += subset_bomb_count
+						# Check if this subset is NOT contained in any already added subset
+						is_redundant = any(subset_cells.issubset(added[0]) for added in applicable_subsets)
+						
+						if not is_redundant:
+							# Check if any existing subset is contained in this one (replace if smaller)
+							applicable_subsets = [s for s in applicable_subsets if not s[0].issubset(subset_cells)]
+							
+							applicable_subsets.append(bomb_subset)
+							total_subset_bombs += subset_bomb_count
 
 				# Check if the sum of subset bombs matches the cell's remaining bombs
 				if total_subset_bombs == remaining and applicable_subsets:
 					# Get all cells covered by the subsets
-					all_subset_cells = set()
-					for subset in applicable_subsets:
-						all_subset_cells.update(subset[0])
-						
+					all_subset_cells = set().union(*[s[0] for s in applicable_subsets])
+					
 					# Deduce safe cells outside these subsets
 					safe_cells = set(hidden) - all_subset_cells
 					if safe_cells:
