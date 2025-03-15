@@ -58,8 +58,50 @@ class Solver():
 						self._mark_bomb(_row, _col)
 					continue
 
-				if len(hidden) + flagged > cell.getNumAround() and len(hidden) <= 3:
-					self.confirmed_bomb_subsets.add((frozenset(hidden), remaining))
+				
+				if len(hidden) + flagged > cell.getNumAround():
+					new_subset = (frozenset(hidden), remaining)
+					
+					subsets_to_add = [new_subset]
+					processed = set()
+					
+					# Check against existing subsets
+					for existing in list(self.confirmed_bomb_subsets):
+						existing_cells, existing_bombs = existing
+						
+						# New subset is a SUPERSET of an existing subset
+						if existing_cells.issubset(new_subset[0]):
+							# Deduce a new subset for the difference
+							diff_cells = new_subset[0] - existing_cells
+							diff_bombs = new_subset[1] - existing_bombs
+							if diff_bombs > 0 and diff_cells:
+								new_diff_subset = (frozenset(diff_cells), diff_bombs)
+								subsets_to_add.append(new_diff_subset)
+							# Remove the existing subset (will be replaced)
+							self.confirmed_bomb_subsets.remove(existing)
+							processed.add(existing)
+						
+						# New subset is a SUBSET of an existing subset
+						elif new_subset[0].issubset(existing_cells):
+							# Deduce a new subset for the difference
+							diff_cells = existing_cells - new_subset[0]
+							diff_bombs = existing_bombs - new_subset[1]
+							if diff_bombs > 0 and diff_cells:
+								new_diff_subset = (frozenset(diff_cells), diff_bombs)
+								subsets_to_add.append(new_diff_subset)
+							# Remove the existing superset
+							self.confirmed_bomb_subsets.remove(existing)
+							processed.add(existing)
+					
+					# Add all new subsets (original + deduced differences)
+					for subset in subsets_to_add:
+						if subset not in self.confirmed_bomb_subsets:
+							self.confirmed_bomb_subsets.add(subset)
+					
+					# Re-add processed subsets that weren't replaced
+					for s in processed:
+						if s not in self.confirmed_bomb_subsets:
+							self.confirmed_bomb_subsets.add(s)
 
 	
 	def advancedLogic(self):
