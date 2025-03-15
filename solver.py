@@ -63,7 +63,6 @@ class Solver():
 
 	
 	def advancedLogic(self):
-		print(self.confirmed_bomb_subsets)
 		for row in range(self.height):
 			for col in range(self.width):
 				cell: Cell = self.board.getCell(row, col)
