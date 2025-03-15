@@ -6,6 +6,7 @@ from board import Board
 from board import BoardBis
 from cell import Cell
 from solver import Solver
+from check import Check
 
 class Game():
 	def __init__(self, board, screenSize):
@@ -46,8 +47,11 @@ class Game():
 						if canSolve:
 							print('No guess')
 						else:
-							print('Guess :(')
-						pass
+							print('Guess')
+					if event.key == pygame.K_c:
+						if not solver.solve():
+							check = Check(self.board)
+							check.checkBoard()
 					if event.key == pygame.K_a:
 						self.board = BoardBis(self.board.getSize(), self.board.getNbBombs())
 						started = False
