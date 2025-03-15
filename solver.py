@@ -194,6 +194,11 @@ class Solver():
 	def mineCountLogic(self):
 		remaining_bombs = self.board.getFlagToFind()
 		if remaining_bombs <= 0:
+			for row in range(self.height):
+				for col in range(self.width):
+					cell: Cell = self.board.getCell(row, col)
+					if not cell.getIsClicked():
+						self._mark_safe(row, col)
 			return
 		# Get all hidden cells and confirmed subsets
 		all_hidden = set()
