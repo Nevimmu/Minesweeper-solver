@@ -190,7 +190,13 @@ class Solver():
 							
 							applicable_subsets.append(bomb_subset)
 							total_subset_bombs += subset_bomb_count
-				
+
+				# Check if any applicable_subsets is full
+				if applicable_subsets:
+					for sub_cell, sub_bomb in applicable_subsets:
+						if len(sub_cell) == sub_bomb:
+							for _cell in sub_cell:
+								self._mark_bomb(_cell[0], _cell[1])
 				
 				# Safe cells
 				if applicable_subsets:
