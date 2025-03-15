@@ -337,14 +337,15 @@ class Solver():
 		while True:
 			self.changed = False
 			self.confirmed_bomb_subsets.clear()
+			bomb_to_find = self.board.getFlagToFind()
 
 			self.basicDeduction()
 			self.advancedLogic()
 			
-			if not self.changed: 
+			if not self.changed and bomb_to_find <= 20: 
 				self.mineCountLogic()
 
-			if self.board.getFlagToFind() == 1:
+			if bomb_to_find == 1:
 				self.singleBombLogic()
 			
 			if not self.changed:
