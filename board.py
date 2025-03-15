@@ -7,7 +7,7 @@ class Board():
 	def __init__(self, size, nbBombs):
 		self.size = size
 		self.nbBombs = nbBombs
-		self.seed = 1740190271 # self.getSeed() 
+		self.seed = self.getSeed() 
 		print(self.seed)
 		self.lost = False
 		self.numClicked = 0

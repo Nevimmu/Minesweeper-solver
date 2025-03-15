@@ -56,12 +56,12 @@ class Game():
 					if event.key == pygame.K_y:
 						solver.advancedLogic()
 					if event.key == pygame.K_u:
-						solver.singleBombLogic()
+						solver.mineCountLogic()
 
 			self.draw()
 			if self.board.getWon():
 				print('you won')
-				time.sleep(2)
+				time.sleep(.5)
 				self.board = Board(self.board.getSize(), self.board.getNbBombs())
 				started = False
 		pygame.quit()
