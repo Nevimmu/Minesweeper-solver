@@ -63,6 +63,7 @@ class Solver():
 
 	
 	def advancedLogic(self):
+		print(self.confirmed_bomb_subsets)
 		for row in range(self.height):
 			for col in range(self.width):
 				cell: Cell = self.board.getCell(row, col)
@@ -126,6 +127,8 @@ class Solver():
 							for r, c in non_shared:
 								self._mark_bomb(r, c)
 					
+
+				# Set and subset logic
 				applicable_subsets = []
 				total_subset_bombs = 0
 
@@ -146,6 +149,23 @@ class Solver():
 							
 							applicable_subsets.append(bomb_subset)
 							total_subset_bombs += subset_bomb_count
+				
+				
+				# Safe cells
+				if applicable_subsets:
+					all_subset_cells = set().union(*[s[0] for s in applicable_subsets])
+					safe_cells = set(hidden) - all_subset_cells
+					remaining_after_subsets = remaining - total_subset_bombs
+					
+					# Subsets account for ALL bombs -> remaining cells are safe
+					if total_subset_bombs == remaining and safe_cells:
+						for s_row, s_col in safe_cells:
+								self._mark_safe(s_row, s_col)
+					
+					# Remaining cells MUST be bombs
+					elif remaining_after_subsets == len(safe_cells) and safe_cells:
+						for r_row, r_col in safe_cells:
+							self._mark_bomb(r_row, r_col)
 
 				# Check if the sum of subset bombs matches the cell's remaining bombs
 				if total_subset_bombs == remaining and applicable_subsets:
