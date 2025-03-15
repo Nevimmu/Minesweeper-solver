@@ -1,8 +1,5 @@
 import pyautogui
 import time
-import keyboard
-import numpy as np
-import random
 import win32api, win32con
 
 from board import Board
