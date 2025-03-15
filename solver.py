@@ -102,8 +102,30 @@ class Solver():
 					for s in processed:
 						if s not in self.confirmed_bomb_subsets:
 							self.confirmed_bomb_subsets.add(s)
+		self.prune_confirmed_subsets()
 
 	
+	def prune_confirmed_subsets(self):
+			"""Remove redundant subsets (supersets of smaller subsets)."""
+
+			# Sort subsets by size (smallest first)
+			sorted_subsets = sorted(list(self.confirmed_bomb_subsets), key=lambda x: len(x[0]))
+			
+			minimal_subsets = []
+			# Check each subset against all smaller ones
+			for i, (cells, bombs) in enumerate(sorted_subsets):
+				is_minimal = True
+				# Compare against all already accepted minimal subsets
+				for minimal_cells, _ in minimal_subsets:
+					if cells.issuperset(minimal_cells):
+						is_minimal = False
+						break
+				if is_minimal:
+					minimal_subsets.append((cells, bombs))
+			
+			# Update confirmed_bomb_subsets
+			self.confirmed_bomb_subsets = set(minimal_subsets)
+
 	def advancedLogic(self):
 		for row in range(self.height):
 			for col in range(self.width):
