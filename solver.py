@@ -135,6 +135,7 @@ class Solver():
 
 				hidden, flag = self.countHiddenAndFlag(row, col)
 				remaining = cell.getNumAround() - flag
+				current_hidden = set(hidden)
 
 				if not hidden:
 					continue
@@ -190,6 +191,37 @@ class Solver():
 							for r, c in non_shared:
 								self._mark_bomb(r, c)
 					
+
+				# Check all neighboring cells for deductions
+				for _row, _col in self.getNeighborsPos(row, col):
+						neighbor: Cell = self.board.getCell(_row, _col)
+						if not neighbor.getIsClicked() or neighbor.getNumAround() == 0:
+								continue
+						n_hidden, n_flag = self.countHiddenAndFlag(_row, _col)
+						n_remaining = neighbor.getNumAround() - n_flag
+						n_hidden_set = set(n_hidden)
+						# Step 1: Check if any confirmed bomb subset is a subset of neighbor's hidden cells
+						applicable_subsets = []
+						for subset in self.confirmed_bomb_subsets:
+								subset_cells, subset_bombs = subset
+								shared_cells = subset_cells & current_hidden
+								if subset_cells.issubset(n_hidden_set):
+										if not shared_cells:
+											applicable_subsets.append(subset)
+											continue
+						# Step 2: Calculate adjusted remaining bombs for neighbor
+						total_subset_bombs = sum(s[1] for s in applicable_subsets)
+						adjusted_remaining = n_remaining - total_subset_bombs
+						adjusted_hidden = n_hidden_set - set().union(*[s[0] for s in applicable_subsets])
+						external_bomb = current_hidden - adjusted_hidden
+						external_safe = adjusted_hidden - current_hidden
+						# Step 3: Apply deductions based on adjusted values
+						if external_bomb and len(external_bomb) + adjusted_remaining == remaining:
+								for pos in external_bomb:
+										self._mark_bomb(pos[0], pos[1])
+								if external_safe:
+									for pos in external_safe:
+											self._mark_safe(pos[0], pos[1])
 
 				# Set and subset logic
 				applicable_subsets = []
