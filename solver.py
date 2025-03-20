@@ -150,8 +150,6 @@ class Solver():
 						self._mark_bomb(_row, _col)
 					continue
 
-				if row == 15 and col == 12:
-					pass
 				
 				# 4-1
 				for _row, _col in self.getNeighborsPos(row, col):
