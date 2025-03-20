@@ -149,6 +149,9 @@ class Solver():
 					for _row, _col in hidden:
 						self._mark_bomb(_row, _col)
 					continue
+
+				if row == 15 and col == 12:
+					pass
 				
 				# 4-1
 				for _row, _col in self.getNeighborsPos(row, col):
@@ -278,6 +281,25 @@ class Solver():
 					if safe_cells:
 						for s_row, s_col in safe_cells:
 							self._mark_safe(s_row, s_col)
+
+				# Check if the the neighbors shared hidden cell overflow
+				for subset in applicable_subsets:
+					subset_cells, subset_bomb_count = subset
+					for _row, _col in self.getNeighborsPos(row, col):
+						neighbor: Cell = self.board.getCell(_row, _col)
+						if not neighbor.getIsClicked() or neighbor.getNumAround() == 0:
+							continue
+
+						n_hidden, n_flag = self.countHiddenAndFlag(_row, _col)
+						n_remaining = neighbor.getNumAround() - n_flag
+
+						shared = set(n_hidden) & subset_cells
+						external_cell = subset_cells - set(n_hidden)
+
+						if shared and len(shared) > n_remaining and subset_bomb_count == len(external_cell) + n_remaining:
+							for external_row, external_col in external_cell:
+								self._mark_bomb(external_row, external_col)
+
 
 	def _mark_safe(self, row, col):
 			cell: Cell = self.board.getCell(row, col)
